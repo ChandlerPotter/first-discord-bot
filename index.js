@@ -23,6 +23,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
 		  textChannel.send(`${newState.member.displayName} joined ${newState.channel.name}!`);
 		  break;
 		case (!newUserChannel):
+			// User leaves a channel 
 		  if (!textChannel) {console.log('No Channel exists')}
 		  textChannel.send(`${newState.member.displayName} left ${oldState.channel.name}!`);
 		  break;
