@@ -4,13 +4,36 @@ const axios = require('axios');
 const Discord = require('discord.js');
 var snoowrap = require('snoowrap');
 const { Client, Intents } = require('discord.js');
-const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
-
+const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_VOICE_STATES] });
 
 
 client.on('ready', () => {
 	console.log(`Logged in as ${client.user.tag}!`);
 });
+
+client.on('voiceStateUpdate', async (oldState, newState) => {
+	let newUserChannel = newState.channelId
+	let oldUserChannel = oldState.channelId
+	const textChannel = await client.channels.fetch('898622565835223040') //General text channel
+
+	switch (true) {
+		case (!oldUserChannel && newUserChannel !== null):
+			 // User Joins a voice channel
+			 if (!textChannel) {console.log('No Channel exists')}
+			 textChannel.send(`${newState.member.displayName} joined ${newState.channel.name}!`);
+			break;
+		case (!newUserChannel):
+		  if (!textChannel) {console.log('No Channel exists')}
+		  textChannel.send(`${newState.member.displayName} left ${oldState.channel.name}!`);
+			break;
+		case (oldUserChannel && newUserChannel && oldUserChannel !== newUserChannel):
+			// User leaves a channel and Joins a new channel
+		  if (!textChannel) {console.log('No Channel exists')}
+		  textChannel.send(`${newState.member.displayName} left ${oldState.channel.name} and joined ${newState.channel.name}`);
+	}
+  })
+
+  
 
 client.on('message', async msg => {
 	switch(msg.content) {
@@ -28,11 +51,8 @@ client.on('message', async msg => {
 				msg.channel.send("Please take an eye break now!")
 				.catch(console.error); 
 			}, 3600000); //every hour
-			break;
 		}
 });
-
-//Send message if a user joins a voice channel
 
 async function generateMeme() {
 	const r = new snoowrap({
