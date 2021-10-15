@@ -19,13 +19,13 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
 	switch (true) {
 		case (!oldUserChannel && newUserChannel !== null):
 			 // User Joins a voice channel
-			 if (!textChannel) {console.log('No Channel exists')}
-			 textChannel.send(`${newState.member.displayName} joined ${newState.channel.name}!`);
-			break;
+		  if (!textChannel) {console.log('No Channel exists')}
+		  textChannel.send(`${newState.member.displayName} joined ${newState.channel.name}!`);
+		  break;
 		case (!newUserChannel):
 		  if (!textChannel) {console.log('No Channel exists')}
 		  textChannel.send(`${newState.member.displayName} left ${oldState.channel.name}!`);
-			break;
+		  break;
 		case (oldUserChannel && newUserChannel && oldUserChannel !== newUserChannel):
 			// User leaves a channel and Joins a new channel
 		  if (!textChannel) {console.log('No Channel exists')}
