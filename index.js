@@ -4,7 +4,8 @@ const axios = require('axios');
 const Discord = require('discord.js');
 var snoowrap = require('snoowrap');
 const { Client, Intents } = require('discord.js');
-const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_VOICE_STATES] });
+const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_MEMBERS] });
+
 
 
 client.on('ready', () => {
@@ -35,8 +36,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
   })
 
   
-
-client.on('message', async msg => {
+client.on('messageCreate', async msg => {
 	switch(msg.content) {
 		case 'ping':
 			msg.reply('Pong');
@@ -52,8 +52,19 @@ client.on('message', async msg => {
 				msg.channel.send("Please take an eye break now!")
 				.catch(console.error); 
 			}, 3600000); //every hour
+		case '!users':
+			const guild = await client.guilds.fetch('897717329432039464')
+			const members = await guild.members.fetch()
+			userList(msg.channel, guild, members);
 		}
 });
+
+async function userList(ch, g, m) {
+	let userList = [];
+	ch.send(`Total Number of users on server: ${g.memberCount}`)
+	m.each(user => userList.push(user.displayName));
+	ch.send(userList.join('\n'));
+}
 
 async function generateMeme() {
 	const r = new snoowrap({
