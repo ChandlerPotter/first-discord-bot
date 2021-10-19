@@ -4,7 +4,12 @@ const axios = require('axios');
 const Discord = require('discord.js');
 var snoowrap = require('snoowrap');
 const { Client, Intents } = require('discord.js');
-const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_MEMBERS] });
+const client = new Client({ intents: 
+	[Intents.FLAGS.GUILDS, 
+	Intents.FLAGS.GUILD_MESSAGES, 
+	Intents.FLAGS.GUILD_VOICE_STATES, 
+	Intents.FLAGS.GUILD_MEMBERS] 
+});
 
 
 
@@ -37,8 +42,9 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
 
   
 client.on('messageCreate', async msg => {
-	switch(msg.content) {
-		case 'ping':
+	const arr = msg.content.split(' ');
+	switch(arr[0]) {
+		case '!ping':
 			msg.reply('Pong');
 			break;
 		case '!meme':
@@ -56,6 +62,11 @@ client.on('messageCreate', async msg => {
 			const guild = await client.guilds.fetch('897717329432039464')
 			const members = await guild.members.fetch()
 			userList(msg.channel, guild, members);
+		case '!commands':
+			msg.channel.send('!ping: Recieve a pong\n!meme: Generate a meme\n!eye: Set reminders\n!users: Get list of users')
+		case '!mute':
+			if (arr[1]){ muteMember(arr[1]) }
+			else msg.channel.send('No user specified')
 		}
 });
 
@@ -79,6 +90,26 @@ async function generateMeme() {
 	
 	return randomPost['url'];
   };
+
+async function muteMember(userName) { //still need to cover if user is not in a voice channel. 
+	const guild2 = await client.guilds.fetch('897717329432039464');
+	const channel = await client.channels.fetch('898622565835223040')
+	const s = await guild2.members.fetch()
+	s.each(user => {
+		user.displayName = user.displayName.toLowerCase();
+		if (user.displayName === userName.toLowerCase()){
+			if (user.voice.mute) { 
+				user.voice.setMute(false);
+				channel.send(`${user.displayName} has been muted.`)
+			}
+			else { 
+				user.voice.setMute(true);
+				channel.send(`${user.displayName} has been unmuted.`)
+			}
+			return
+		}
+	})
+}
 
 
 client.login(process.env.CLIENT_TOKEN); //login bot using token, make sure this is last line.
