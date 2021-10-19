@@ -91,7 +91,7 @@ async function generateMeme() {
 	return randomPost['url'];
   };
 
-async function muteMember(userName) { //still need to cover if user is not in a voice channel. 
+async function muteMember(userName) { //still need to cover if user is not in a voice channel. m
 	const guild2 = await client.guilds.fetch('897717329432039464');
 	const channel = await client.channels.fetch('898622565835223040')
 	const s = await guild2.members.fetch()
