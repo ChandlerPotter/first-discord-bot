@@ -13,6 +13,7 @@ const client = new Client({ intents:
 
 
 
+
 client.on('ready', () => {
 	console.log(`Logged in as ${client.user.tag}!`);
 });
@@ -68,7 +69,7 @@ client.on('messageCreate', async msg => {
 			msg.channel.send('!ping: Recieve a pong\n!meme: Generate a meme\n!eye: Set reminders\n!users: Get list of users');
 			break;
 		case '!mute':
-			if (arr[1]){ muteMember(arr[1]).catch(console.error) }
+			if (arr[1] && isOwner()){ muteMember(arr[1]).catch(console.error) }
 			else msg.channel.send('No user specified')
 			break;
 		}
@@ -113,6 +114,11 @@ async function muteMember(userName) {
 			return
 		}
 	})
+}
+
+async function isOwner(userID) {
+	const adminID = (await client.guilds.fetch('897717329432039464')).ownerId;
+	return userID === adminID;
 }
 
 
