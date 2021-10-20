@@ -49,7 +49,7 @@ client.on('messageCreate', async msg => {
 			break;
 		case '!meme':
 			msg.channel.send("Here's your meme!");
-			let response = await generateMeme();
+			let response = await generateMeme().catch(console.error);
 			msg.channel.send(response);
 			break;
 		case "!eye":
@@ -58,15 +58,19 @@ client.on('messageCreate', async msg => {
 				msg.channel.send("Please take an eye break now!")
 				.catch(console.error); 
 			}, 3600000); //every hour
+			break;
 		case '!users':
 			const guild = await client.guilds.fetch('897717329432039464')
 			const members = await guild.members.fetch()
 			userList(msg.channel, guild, members);
+			break;
 		case '!commands':
-			msg.channel.send('!ping: Recieve a pong\n!meme: Generate a meme\n!eye: Set reminders\n!users: Get list of users')
+			msg.channel.send('!ping: Recieve a pong\n!meme: Generate a meme\n!eye: Set reminders\n!users: Get list of users');
+			break;
 		case '!mute':
-			if (arr[1]){ muteMember(arr[1]) }
+			if (arr[1]){ muteMember(arr[1]).catch(console.error) }
 			else msg.channel.send('No user specified')
+			break;
 		}
 });
 
@@ -91,18 +95,18 @@ async function generateMeme() {
 	return randomPost['url'];
   };
 
-async function muteMember(userName) { //still need to cover if user is not in a voice channel. m
+async function muteMember(userName) {
 	const guild2 = await client.guilds.fetch('897717329432039464');
 	const channel = await client.channels.fetch('898622565835223040')
 	const s = await guild2.members.fetch()
 	s.each(user => {
 		user.displayName = user.displayName.toLowerCase();
 		if (user.displayName === userName.toLowerCase()){
-			if (user.voice.mute) { 
+			if (user.voice.mute && user.voice.channel) { 
 				user.voice.setMute(false);
 				channel.send(`${user.displayName} has been muted.`)
 			}
-			else { 
+			else if (!user.voice.mute && user.voice.channel){ 
 				user.voice.setMute(true);
 				channel.send(`${user.displayName} has been unmuted.`)
 			}
