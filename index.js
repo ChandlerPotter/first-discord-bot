@@ -11,7 +11,7 @@ const client = new Client({ intents:
 	Intents.FLAGS.GUILD_MEMBERS] 
 });
 
-
+//Text based turn game that DMs users based on what they put into a text channel? (deals them their 'hand' by DMing them)
 
 
 client.on('ready', () => {
@@ -46,7 +46,7 @@ client.on('messageCreate', async msg => {
 	const arr = msg.content.split(' ');
 	switch(arr[0]) {
 		case '!ping':
-			msg.reply('Pong');
+			msg.reply(':eyes:');
 			break;
 		case '!meme':
 			msg.channel.send("Here's your meme!");
@@ -69,11 +69,22 @@ client.on('messageCreate', async msg => {
 			msg.channel.send('!ping: Recieve a pong\n!meme: Generate a meme\n!eye: Set reminders\n!users: Get list of users');
 			break;
 		case '!mute':
-			if (arr[1] && isOwner()){ muteMember(arr[1]).catch(console.error) }
-			else msg.channel.send('No user specified')
+			const ownerBool = await isOwner(msg.author.id);
+			if (!ownerBool){ msg.channel.send(`You are not the server owner. You cannot mute.`) }
+			else if (arr[1] && ownerBool){ muteMember(arr[1]) }
+			else { msg.channel.send('No user specified') }
 			break;
+			//add another condition that responds that the specified user in not in a voice channel right now (does not server mute them)
 		}
 });
+
+client.on('guildMemberAdd', async newMember => {
+	newMember.send('You like MILFs');
+	console.log('user added')
+})
+
+//Send user a DM when they first join the server, welcoming them. 
+//Move specified user to specified voiceChannel.
 
 async function userList(ch, g, m) {
 	let userList = [];
@@ -96,19 +107,19 @@ async function generateMeme() {
 	return randomPost['url'];
   };
 
-async function muteMember(userName) {
+async function muteMember(userName) { 
 	const guild2 = await client.guilds.fetch('897717329432039464');
 	const channel = await client.channels.fetch('898622565835223040')
 	const s = await guild2.members.fetch()
 	s.each(user => {
-		user.displayName = user.displayName.toLowerCase();
-		if (user.displayName === userName.toLowerCase()){
-			if (user.voice.mute && user.voice.channel) { 
-				user.voice.setMute(false);
+		const lowerCaseName = user.displayName.toLowerCase();
+		if (lowerCaseName === userName.toLowerCase()){
+			if (!user.voice.serverMute && user.voice.channel) { 
+				user.voice.setMute(true);
 				channel.send(`${user.displayName} has been muted.`)
 			}
-			else if (!user.voice.mute && user.voice.channel){ 
-				user.voice.setMute(true);
+			else if (user.voice.serverMute && user.voice.channel){ 
+				user.voice.setMute(false);
 				channel.send(`${user.displayName} has been unmuted.`)
 			}
 			return
@@ -118,7 +129,7 @@ async function muteMember(userName) {
 
 async function isOwner(userID) {
 	const adminID = (await client.guilds.fetch('897717329432039464')).ownerId;
-	return userID === adminID;
+	return (userID === adminID);
 }
 
 
