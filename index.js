@@ -1,4 +1,3 @@
-//Discord bot that says 
 require('dotenv').config();
 const axios = require('axios');
 const Discord = require('discord.js');
@@ -10,6 +9,7 @@ const client = new Client({ intents:
 	Intents.FLAGS.GUILD_VOICE_STATES, 
 	Intents.FLAGS.GUILD_MEMBERS] 
 });
+let userArr = []
 
 //Text based turn game that DMs users based on what they put into a text channel? (deals them their 'hand' by DMing them)
 
@@ -21,7 +21,7 @@ client.on('ready', () => {
 client.on('voiceStateUpdate', async (oldState, newState) => {
 	let newUserChannel = newState.channelId
 	let oldUserChannel = oldState.channelId
-	const textChannel = await client.channels.fetch('898622565835223040') //General text channel
+	const textChannel = await getTextChannel('898622565835223040');
 
 	switch (true) {
 		case (!oldUserChannel && newUserChannel !== null):
@@ -53,15 +53,8 @@ client.on('messageCreate', async msg => {
 			let response = await generateMeme().catch(console.error);
 			msg.channel.send(response);
 			break;
-		case "!eye":
-			msg.channel.send("You are now subscribed to eye reminders.");
-				interval = setInterval (function () {
-				msg.channel.send("Please take an eye break now!")
-				.catch(console.error); 
-			}, 3600000); //every hour
-			break;
 		case '!users':
-			const guild = await client.guilds.fetch('897717329432039464')
+			const guild = await getGuild('897717329432039464');
 			const members = await guild.members.fetch()
 			userList(msg.channel, guild, members);
 			break;
@@ -71,26 +64,36 @@ client.on('messageCreate', async msg => {
 		case '!mute':
 			const ownerBool = await isOwner(msg.author.id);
 			if (!ownerBool){ msg.channel.send(`You are not the server owner. You cannot mute.`) }
-			else if (arr[1] && ownerBool){ muteMember(arr[1]) }
+			else if (arr[1] && ownerBool){ 
+				const members_mute = await (await getGuild('897717329432039464')).members.fetch();
+				const match = members_mute.find(m => m.displayName.toLowerCase() === arr[1].toLowerCase());
+				if (match.voice.channel) { muteMember(arr[1]) } 
+				else { msg.channel.send('User is not in a Voice Channel.') }
+			}
 			else { msg.channel.send('No user specified') }
 			break;
-			//add another condition that responds that the specified user in not in a voice channel right now (does not server mute them)
 		}
 });
 
 client.on('guildMemberAdd', async newMember => {
-	newMember.send('You like MILFs');
-	console.log('user added')
+	newMember.send(`Welcome to ${newMember.guild.name}!`);
+	userArr.push(newMember.displayName);
 })
 
-//Send user a DM when they first join the server, welcoming them. 
+client.on('guildMemberRemove', async oldMember => {
+	const index = userArr.indexOf(oldMember.displayName);
+	if (index > -1) { userArr.splice(index, 1) }
+})
+
 //Move specified user to specified voiceChannel.
 
+//Possibly use a .txt file to store the list of users.
 async function userList(ch, g, m) {
-	let userList = [];
 	ch.send(`Total Number of users on server: ${g.memberCount}`)
-	m.each(user => userList.push(user.displayName));
-	ch.send(userList.join('\n'));
+	if (userArr.length === 0) {
+		m.each(user => userArr.push(user.displayName));
+	}
+	ch.send(userArr.join('\n'));
 }
 
 async function generateMeme() {
@@ -130,6 +133,14 @@ async function muteMember(userName) {
 async function isOwner(userID) {
 	const adminID = (await client.guilds.fetch('897717329432039464')).ownerId;
 	return (userID === adminID);
+}
+
+async function getTextChannel(cID) {
+	return await client.channels.fetch(cID);
+}
+
+async function getGuild(gID) {
+	return await client.guilds.fetch(gID);
 }
 
 
