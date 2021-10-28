@@ -12,6 +12,8 @@ const client = new Client({ intents:
 client.commands = new Discord.Collection();
 
 //Text based turn game that DMs users based on what they put into a text channel? (deals them their 'hand' by DMing them)
+//Move specified user to specified voiceChannel.
+//Kick, ban/unban, invite users.
 
 const events = fs.readdirSync("./events").filter(file => file.endsWith(".js"));
 for (const file of events) {
@@ -29,6 +31,5 @@ for (const file of commands) {
   client.commands.set(commandName, command);
 }
 
-//Move specified user to specified voiceChannel.
 
 client.login(process.env.CLIENT_TOKEN); //login bot using token, make sure this is last line.
